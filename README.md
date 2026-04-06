@@ -1,10 +1,10 @@
 # Graph Tree Generator for LLMs
 
-A tree-sitter-based static analysis tool that extracts structural graphs from codebases, stores them in a SQLite database with vector embeddings, and exposes them as MCP tools for Claude.
+A tree-sitter-based static analysis tool that extracts structural graphs from codebases, stores them in a SQLite database with vector embeddings, and exposes them as MCP tools for LLMs.
 
 It parses source files into ASTs and produces a graph of **nodes** (files, functions, classes, calls, exports, types, tables, views) and **edges** (imports, contains, exports, extends, FK relationships) that represent the architecture of a project. The graph is enriched with **source code text** for each node and **vector embeddings** (via Ollama) for semantic similarity search.
 
-The result is a single `.db` file that Claude can query through an MCP server to navigate codebases efficiently -- structural graph traversal for "where is it?" and vector search for "what does it do?" -- reducing token consumption by replacing blind file exploration with targeted O(1) lookups.
+The result is a single `.db` file that an LLM can query through an MCP server to navigate codebases efficiently -- structural graph traversal for "where is it?" and vector search for "what does it do?" -- reducing token consumption by replacing blind file exploration with targeted O(1) lookups.
 
 ## Table of Contents
 

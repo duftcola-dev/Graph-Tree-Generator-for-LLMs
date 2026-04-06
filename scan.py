@@ -59,29 +59,8 @@ def validate_target_paths(targets: list[dict], workspace_root: Path) -> list[dic
 
 def init()->bool:
     try:
-        parser = argparse.ArgumentParser(description="Graph extractor + database pipeline")
-        parser.add_argument(
-            "config",
-            nargs="?",
-            default="graph_tree_generator/config/config.json",
-            help="Path to config file (default: graph_tree_generator/config/config.json)",
-        )
-        parser.add_argument(
-            "--target", "-t",
-            action="append",
-            dest="targets",
-            help="Run only named targets (can repeat). Omit to run all.",
-        )
-        parser.add_argument(
-            "--no-embeddings",
-            action="store_true",
-            help="Skip embedding generation even if Ollama is available.",
-        )
-        args = parser.parse_args()
-
         workspace_root = Path.cwd()
-        config_path = Path(args.config)
-
+        config_path = Path.joinpath(workspace_root,"graph_tree_generator","config","config.json").resolve()
         if not config_path.exists():
             print(f"Config not found: {config_path}")
             return False
@@ -92,7 +71,7 @@ def init()->bool:
         ollama_config = config.get("ollama", {})
         ollama_url = ollama_config.get("url", "http://localhost:11434")
         ollama_model = ollama_config.get("model", "nomic-embed-text")
-        do_embeddings = not args.no_embeddings
+        do_embeddings = True
 
         if do_embeddings:
             print(f"Checking Ollama at {ollama_url}...")
@@ -115,14 +94,6 @@ def init()->bool:
 
         # ── 2. Load and validate targets ─────────────────────────────
         targets = load_targets(config_path, workspace_root)
-
-        if args.targets:
-            names = set(args.targets)
-            targets = [t for t in targets if t["name"] in names]
-            if not targets:
-                print(f"No targets matched: {args.targets}")
-                return False
-
         print(f"\nValidating {len(targets)} target(s)...")
         targets = validate_target_paths(targets, workspace_root)
 

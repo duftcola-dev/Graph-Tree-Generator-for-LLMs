@@ -1,6 +1,6 @@
 # Python-generated files
 __pycache__/
-graph
+graph/
 *.py[oc]
 build/
 dist/

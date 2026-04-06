@@ -77,7 +77,7 @@ def cli():
 # ── Top-level commands ───────────────────────────────────────
 
 
-@cli.command()
+@cli.command("scan")
 def scan():
     """Extract graphs from configured targets and build the database."""
     if scan_targets():
@@ -86,7 +86,7 @@ def scan():
         click.echo("Project scanning failed")
 
 
-@cli.command()
+@cli.command("run-mcp")
 def mcp():
     """Start the MCP server for LLM access to the graph database."""
     run_mcp()
@@ -110,13 +110,6 @@ def ollama_status():
 def query(ctx, db):
     ctx.ensure_object(dict)
     ctx.obj["conn"] = open_db(db)
-
-
-@query.result_callback()
-@click.pass_context
-def _close_db(ctx, *args, **kwargs):
-    if ctx.obj.get("conn") is not None:
-        ctx.obj["conn"].close()
 
 
 @query.command()
