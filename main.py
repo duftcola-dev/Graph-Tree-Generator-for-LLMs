@@ -28,8 +28,7 @@ import urllib
 import click
 import sqlite_vec
 
-from scan import init as scan_targets
-from mcp_server import init as run_mcp
+from graph_tree_generator.scan import init as scan_targets
 from graph_tree_generator.db.embeddings import embed_text
 
 
@@ -84,12 +83,6 @@ def scan():
         click.echo("Project scanning completed")
     else:
         click.echo("Project scanning failed")
-
-
-@cli.command("run-mcp")
-def mcp():
-    """Start the MCP server for LLM access to the graph database."""
-    run_mcp()
 
 
 @cli.command("ollama-status")
@@ -497,6 +490,50 @@ def _prompt_ddl_target() -> dict:
     }
 
 
+def _prompt_python_target() -> dict:
+    """Interactive prompts for a Python target."""
+    name = click.prompt("  Target name", type=str)
+    root = click.prompt("  Project root directory", type=click.Path())
+
+    root_path = Path(root)
+    if not root_path.exists():
+        click.echo(f"  Warning: directory not found: {root_path.resolve()}")
+        if not click.confirm("  Continue anyway?", default=False):
+            raise click.Abort()
+
+    default_include = "**/*.py"
+    default_exclude = "**/__pycache__/**, **/.venv/**, **/venv/**, **/.tox/**, **/dist/**, **/build/**, **/*.egg-info/**"
+
+    include_raw = click.prompt("  Include patterns (comma-separated)", default=default_include)
+    exclude_raw = click.prompt("  Exclude patterns (comma-separated)", default=default_exclude)
+
+    include = [p.strip() for p in include_raw.split(",") if p.strip()]
+    exclude = [p.strip() for p in exclude_raw.split(",") if p.strip()]
+
+    output = click.prompt("  Output graph path", default=f"graph/{name}_graph.json")
+
+    return {
+        "type": "python",
+        "name": name,
+        "root": str(Path(root).resolve()),
+        "output": output,
+        "include": include,
+        "exclude": exclude,
+        "max_depth": 10,
+        "extract": {
+            "imports": True,
+            "functions": True,
+            "calls": True,
+            "classes": True,
+        },
+        "resolve": {
+            "skip_external": True,
+            "src_roots": [],
+        },
+        "labels": [],
+    }
+
+
 def _prompt_jsts_target(lang: str) -> dict:
     """Interactive prompts for a JavaScript/TypeScript target."""
     name = click.prompt("  Target name", type=str)
@@ -580,10 +617,12 @@ def config_init(config_path):
     if click.confirm("\n  Add a target now?", default=True):
         target_type = click.prompt(
             "  Target type",
-            type=click.Choice(["ddl", "javascript", "typescript"], case_sensitive=False),
+            type=click.Choice(["ddl", "javascript", "typescript", "python"], case_sensitive=False),
         )
         if target_type == "ddl":
             target = _prompt_ddl_target()
+        elif target_type == "python":
+            target = _prompt_python_target()
         else:
             target = _prompt_jsts_target(target_type)
         cfg["targets"].append(target)
@@ -605,11 +644,13 @@ def config_add(config_path):
 
     target_type = click.prompt(
         "  Target type",
-        type=click.Choice(["ddl", "javascript", "typescript"], case_sensitive=False),
+        type=click.Choice(["ddl", "javascript", "typescript", "python"], case_sensitive=False),
     )
 
     if target_type == "ddl":
         target = _prompt_ddl_target()
+    elif target_type == "python":
+        target = _prompt_python_target()
     else:
         target = _prompt_jsts_target(target_type)
 
@@ -652,7 +693,7 @@ def config_list(config_path):
         if ttype == "ddl":
             click.echo(f"     file:    {t.get('file', '—')}")
             click.echo(f"     dialect: {t.get('dialect', 'postgres')}")
-        elif ttype in ("javascript", "typescript"):
+        elif ttype in ("javascript", "typescript", "python"):
             click.echo(f"     root:    {t.get('root', '—')}")
             include = t.get("include", [])
             click.echo(f"     include: {', '.join(include[:4])}")

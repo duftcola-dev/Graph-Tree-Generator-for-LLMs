@@ -2,7 +2,7 @@
   "version": 1,
   "ollama": {
     "url": "http://localhost:11434",
-    "model": "nomic-embed-text-v2-moe"
+    "model": "nomic-embed-text"
   },
   "database": {
     "path": "graph/code_graph.db"

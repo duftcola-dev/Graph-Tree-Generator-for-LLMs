@@ -47,6 +47,10 @@ def run_target(target: dict, workspace_root: Path) -> dict | None:
         from graph_tree_generator.jsts.runner import run_jsts_extractor
         return run_jsts_extractor(target, workspace_root)
 
+    elif target_type == "python":
+        from graph_tree_generator.python.runner import run_python_extractor
+        return run_python_extractor(target, workspace_root)
+
     else:
         print(f"Unknown extractor type: {target_type}")
         return None

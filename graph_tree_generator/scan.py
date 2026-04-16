@@ -14,7 +14,7 @@ from pathlib import Path
 
 from graph_tree_generator.registry import load_targets, run_target
 from graph_tree_generator.db.schema import create_database
-from graph_tree_generator.db.loader import load_jsts_graph, load_ddl_graph
+from graph_tree_generator.db.loader import load_jsts_graph, load_ddl_graph, load_python_graph
 from graph_tree_generator.db.embeddings import (
     check_ollama,
     check_model,
@@ -42,7 +42,7 @@ def validate_target_paths(targets: list[dict], workspace_root: Path) -> list[dic
             if not file_path.exists():
                 print(f"  SKIP {name}: DDL file not found: {file_path}")
                 continue
-        elif target_type in ("javascript", "typescript"):
+        elif target_type in ("javascript", "typescript", "python"):
             raw_root = Path(t["root"])
             root_path = raw_root if raw_root.is_absolute() else (workspace_root / t["root"]).resolve()
             if not root_path.exists():
@@ -135,6 +135,8 @@ def init()->bool:
 
             if target_type == "ddl":
                 n, e = load_ddl_graph(conn, graph, target_name)
+            elif target_type == "python":
+                n, e = load_python_graph(conn, graph, target_name)
             else:
                 n, e = load_jsts_graph(conn, graph, target_name, target_type)
 

@@ -63,6 +63,14 @@ def load_jsts_graph(conn: sqlite3.Connection, graph: dict, target_name: str, tar
     return len(node_rows), len(edge_rows)
 
 
+def load_python_graph(conn: sqlite3.Connection, graph: dict, target_name: str):
+    """Load a Python graph into the database.
+
+    Uses the same schema as JS/TS since the graph structure is identical.
+    """
+    return load_jsts_graph(conn, graph, target_name, "python")
+
+
 def load_ddl_graph(conn: sqlite3.Connection, graph: dict, target_name: str):
     """Load a DDL graph into the database, normalizing into nodes/edges."""
     meta = graph["metadata"]

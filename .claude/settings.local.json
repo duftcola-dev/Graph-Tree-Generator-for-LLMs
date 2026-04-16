@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(uv run:*)",
-      "Bash(uv add:*)"
+      "Bash(uv add:*)",
+      "Bash(.venv/Scripts/python.exe *)"
     ]
   }
 }
